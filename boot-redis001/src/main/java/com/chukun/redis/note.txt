@@ -1,0 +1,34 @@
+redis内存删除策略
+
+1. 怎么配置？
+   1.1在redis的配置文件redis.conf中配置
+        maxmemory <bytes>
+        默认不配置，也就是使用服务器的最大内存。
+   1.2 在客户端配置
+       登入redis-cli进入redis客户端
+       config set maxmemory  bytes
+2.默认情况下，达到redis的内存配置上线，再次写入redis的相关写命令，会报OOM
+
+3.redis过期key的删除策略
+
+    如果一个key过期了，那么在redis中是立刻被删除吗？
+
+    3.1 定时删除
+        需要记录所有过期的key，这样对于cpu不友好，同时也会影响redis的读性能
+    3.2 惰性删除
+        数据到达过期时间了，先不删除，等到下一次访问的时候，再删除。
+    这样会有漏网之鱼，一种极端的情况，有一个key里面的有很多数据，占用了很多内存，
+    而后面也不会访问此key，针对此问题，就会浪费很多内存，这对于redis这样的内存数据库很不友好。
+    3.2 定期删除
+        每隔一段时间，执行一些过期key的删除
+
+ 4. redis内存淘汰策略（兜底方案）
+
+     # volatile-lru -> 对过期的key使用LRU算法淘汰.
+     # allkeys-lru -> 对所有的key使用LRU算法淘汰.
+     # volatile-lfu -> 对过期的key使用LFU算法淘汰.
+     # allkeys-lfu -> 对所有的key使用LFU算法淘汰.
+     # volatile-random -> 对过期的key使用随机算法淘汰.
+     # allkeys-random -> 对所有的key使用随机算法淘汰.
+     # volatile-ttl -> 取出最接近过期时间的key，淘汰
+     # noeviction -> 对key不做淘汰. （redis出厂默认）
