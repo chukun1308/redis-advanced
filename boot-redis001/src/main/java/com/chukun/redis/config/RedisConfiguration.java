@@ -1,16 +1,11 @@
 package com.chukun.redis.config;
 
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.codec.JsonJacksonCodec;
-import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import redis.clients.jedis.Jedis;
 
 import java.io.Serializable;
 
@@ -18,11 +13,19 @@ import java.io.Serializable;
 public class RedisConfiguration {
 
     @Bean
-    public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory connectionFactory) {
-        RedisTemplate<String, Serializable> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(connectionFactory);
+    public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        RedisTemplate<String,Serializable> redisTemplate = new RedisTemplate<>();
+
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        //设置key序列化方式string
         redisTemplate.setKeySerializer(new StringRedisSerializer());
+        //设置value的序列化方式json
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
 }
