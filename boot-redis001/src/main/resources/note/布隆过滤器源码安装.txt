@@ -1,19 +1,23 @@
-# 下载 编译 安装Rebloom插件
-wget https://github.com/RedisLabsModules/rebloom/archive/v2.2.2.tar.gz
-# 解压
-tar -zxvf v2.2.2.tar.gz
-cd RedisBloom-2.2.2
-# 若是第一次使用 需要安装gcc++环境
-make
-  得到 rebloom.so 编译的文件
-pwd
-# 进入reids目录 配置在redis.conf中 更加方便
-vim redis.conf
-找到loadmodule w位置
-# :/loadmodule
+详见：
+   https://docs.redis.com/latest/modules/redisbloom/
 
-加入布隆过滤器的模块
-loadmodule /usr/local/soft/redis/module/rebloom.so
-# 保存退出
+安装步骤：
+  # 下载 编译 安装Rebloom插件
+  wget https://github.com/RedisLabsModules/rebloom/archive/v2.2.2.tar.gz
+  # 解压
+  tar -zxvf v2.2.2.tar.gz
+  cd RedisBloom-2.2.2
+  # 若是第一次使用 需要安装gcc++环境
+  make
+    得到 rebloom.so 编译的文件
+  pwd
+  # 进入reids目录 配置在redis.conf中 更加方便
+  vim redis.conf
+  找到loadmodule w位置
+  # :/loadmodule
 
-重启redis即可
+  加入布隆过滤器的模块
+  loadmodule /usr/local/soft/redis/module/rebloom.so
+  # 保存退出
+
+  重启redis即可
