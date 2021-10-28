@@ -32,3 +32,5 @@ redis内存删除策略
      # allkeys-random -> 对所有的key使用随机算法淘汰.
      # volatile-ttl -> 取出最接近过期时间的key，淘汰
      # noeviction -> 对key不做淘汰. （redis出厂默认）
+
+   推荐使用  allkeys-lru

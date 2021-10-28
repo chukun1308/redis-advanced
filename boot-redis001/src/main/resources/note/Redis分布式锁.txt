@@ -52,6 +52,8 @@ Redis实现锁的可重入性：
       条件1：客户端从超过半数（大于等于N/2+1）的Redis实例上成功获取到了锁；
       条件2：客户端获取锁的总耗时没有超过锁的有效时间。
 
+    实现参考: MultiRedisInstanceLock
+
   4.Redisson源码解析
     1.缓存续命?
       分布式锁过期了，但是业务逻辑还没处理完怎么办?
@@ -113,6 +115,8 @@ Redis实现锁的可重入性：
 
         在解锁完成之后，实现看门狗释放：
              cancelExpirationRenewal(threadId); 移除看门狗的线程ID。
+
+
 
 
 
