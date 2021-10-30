@@ -5,3 +5,50 @@
    代表 embstr 格式的 SDS(Simple Dynamic String 简单动态字符串),保存长度小于44字节的字符串
   3.raw
    保存长度大于44字节的字符串
+
+SDS简单动态字符串
+  Redis中字符串的实现,SDS有多种结构（sds.h）：
+  sdshdr5、(2^5=32byte)
+  sdshdr8、(2 ^ 8=256byte)
+  sdshdr16、(2 ^ 16=65536byte=64KB)
+  sdshdr32、 (2 ^ 32byte=4GB)
+  sdshdr64，2的64次方byte＝17179869184G用于存储不同的长度的字符串。
+
+  len 表示 SDS 的长度，使我们在获取字符串长度的时候可以在 O(1)情况下拿到，而不是像 C 那样需要遍历一遍字符串。
+
+  alloc 可以用来计算 free 就是字符串已经分配的未使用的空间，有了这个值就可以引入预分配空间的算法了，而不用去考虑内存分配的问题。
+
+Redis为什么重新设计一个 SDS 数据结构？
+  C语言没有Java里面的String类型，只能是靠自己的char[]来实现，字符串在 C 语言中的存储方式，想要获取 「Redis」的长度，需要从头开始遍历，直到遇到 '\0' 为止。
+  所以，Redis 没有直接使用 C 语言传统的字符串标识，而是自己构建了一种名为简单动态字符串 SDS（simple dynamic string）的抽象类型，并将 SDS 作为 Redis 的默认字符串。
+
+源码分析
+  三大编码
+   1.INT 编码格式
+    命令示例： set k1 123
+    当字符串键值的内容可以用一个64位有符号整形来表示时，Redis会将键值转化为long型来进行存储，此时即对应 OBJ_ENCODING_INT 编码类型。
+    Redis 启动时会预先建立 10000 个分别存储 0~9999 的 redisObject 变量作为共享对象，这就意味着如果 set字符串的键值在 0~10000 之间的话，
+    则可以 直接指向共享对象 而不需要再建立新对象，此时键值不占空间！
+
+   2.EMBSTR编码格式
+     对于长度小于 44的字符串，Redis 对键值采用OBJ_ENCODING_EMBSTR 方式，EMBSTR 顾名思义即：embedded string，表示嵌入式的String。
+     从内存结构上来讲 即字符串 sds结构体与其对应的 redisObject 对象分配在同一块连续的内存空间，字符串sds嵌入在redisObject对象之中一样。
+
+   3.RAW 编码格式
+     当字符串的键值为长度大于44的超长字符串时，Redis 则会将键值的内部编码方式改为OBJ_ENCODING_RAW格式，
+     这与OBJ_ENCODING_EMBSTR编码方式的不同之处在于，此时动态字符串sds的内存与其依赖的redisObject的内存不再连续了。
+
+   总结:
+     只有整数才会使用 int，如果是浮点数， Redis 内部其实先将浮点数转化为字符串值，然后再保存。
+     embstr 与 raw 类型底层的数据结构其实都是 SDS (简单动态字符串，Redis 内部定义 sdshdr 一种结构)。
+
+     int	  Long类型整数时，RedisObject中的ptr指针直接赋值为整数数据，不再额外的指针再指向整数了，节省了指针的空间开销。
+     embstr   当保存的是字符串数据且字符串小于等于44字节时，embstr类型将会调用内存分配函数，只分配一块连续的内存空间，空间中依次包含 redisObject 与 sdshdr 两个数据结构，让元数据、指针和SDS是一块连续的内存区域，这样就可以避免内存碎片
+     raw	  当字符串大于44字节时，SDS的数据量变多变大了，SDS和RedisObject布局分家各自过，会给SDS分配多的空间并用指针指向SDS结构，raw 类型将会调用两次内存分配函数，分配两块内存空间，一块用于包含 redisObject结构，而另一块用于包含 sdshdr 结构
+
+
+
+
+
+
+

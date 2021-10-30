@@ -1,0 +1,22 @@
+List的一种编码格式
+  在低版本的Redis中，list采用的底层数据结构是ziplist+linkedList；
+  高版本的Redis中底层数据结构是quicklist(它替换了ziplist+linkedList)，而quicklist也用到了ziplist。
+
+  quicklist: 是ziplist和linkedlist的结合体, 详见: quickList结构.png
+
+源码分析:
+
+  typedef struct quicklist {
+      quicklistNode *head;
+      quicklistNode *tail;
+      unsigned long count;        /* total count of all entries in all ziplists */
+      unsigned long len;          /* number of quicklistNodes */
+      int fill : QL_FILL_BITS;              /* fill factor for individual nodes */
+      unsigned int compress : QL_COMP_BITS; /* depth of end nodes not to compress;0=off */
+      unsigned int bookmark_count: QL_BM_BITS;
+      quicklistBookmark bookmarks[];
+  } quicklist;
+
+  quicklist.h，head和tail指向双向列表的表头和表尾
+  quicklistNode中的*zl指向一个ziplist，一个ziplist可以存放多个元素
+  详见: quicklist+ziplist存储图.png
