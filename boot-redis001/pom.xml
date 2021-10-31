@@ -161,6 +161,12 @@
             <artifactId>mapper</artifactId>
             <version>${mapper.version}</version>
         </dependency>
+        <!--canal客户端-->
+        <dependency>
+            <groupId>com.alibaba.otter</groupId>
+            <artifactId>canal.client</artifactId>
+            <version>1.1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
